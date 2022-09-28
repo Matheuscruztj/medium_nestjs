@@ -10,15 +10,15 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from '@app/user/user.service';
-import { CreateUserDTO } from './dto/createUser.dto';
+import { CreateUserDto } from './dto/createUser.dto';
 import { UserResponseInterface } from './types/userResponse.interface';
-import { LoginUserDTO } from './dto/loginUser.dto';
+import { LoginUserDto } from './dto/loginUser.dto';
 import { Request } from 'express';
 import { ExpressRequest } from './types/expressRequest.interface';
 import { User } from './decorators/user.decorator';
 import { AuthGuard } from './guards/auth.guard';
 import { UserEntity } from './user.entity';
-import { UpdateUserDTO } from './dto/updateUser.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
 
 @Controller()
 export class UserController {
@@ -27,9 +27,9 @@ export class UserController {
   @Post('users')
   @UsePipes(new ValidationPipe())
   async createUser(
-    @Body('user') createUserDTO: CreateUserDTO,
+    @Body('user') createUserDto: CreateUserDto,
   ): Promise<UserResponseInterface> {
-    const user = await this.userService.createUser(createUserDTO);
+    const user = await this.userService.createUser(createUserDto);
 
     return this.userService.buildUserResponse(user);
   }
@@ -37,9 +37,9 @@ export class UserController {
   @Post('users/login')
   @UsePipes(new ValidationPipe())
   async login(
-    @Body('user') loginDTO: LoginUserDTO,
+    @Body('user') loginDto: LoginUserDto,
   ): Promise<UserResponseInterface> {
-    const user = await this.userService.login(loginDTO);
+    const user = await this.userService.login(loginDto);
 
     return this.userService.buildUserResponse(user);
   }
@@ -55,11 +55,11 @@ export class UserController {
   @UseGuards(AuthGuard)
   async updateCurrentUser(
     @User('id') currentUserId: number,
-    @Body('user') updateUserDTO: UpdateUserDTO,
+    @Body('user') updateUserDto: UpdateUserDto,
   ): Promise<UserResponseInterface> {
     const user = await this.userService.updateUser(
       currentUserId,
-      updateUserDTO,
+      updateUserDto,
     );
     return this.userService.buildUserResponse(user);
   }

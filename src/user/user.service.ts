@@ -1,14 +1,14 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDTO } from './dto/createUser.dto';
+import { CreateUserDto } from './dto/createUser.dto';
 import { UserEntity } from './user.entity';
 import { sign } from 'jsonwebtoken';
 import { JWT_SECRET } from '@app/config';
 import { UserResponseInterface } from './types/userResponse.interface';
-import { LoginUserDTO } from './dto/loginUser.dto';
+import { LoginUserDto } from './dto/loginUser.dto';
 import { compare } from 'bcryptjs';
-import { UpdateUserDTO } from './dto/updateUser.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
 
 @Injectable()
 export class UserService {
@@ -17,13 +17,13 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  async createUser(createUserDTO: CreateUserDTO) {
+  async createUser(createUserDto: CreateUserDto) {
     const userByEmail = await this.userRepository.findOne({
-      email: createUserDTO.email,
+      email: createUserDto.email,
     });
 
     const userByUsername = await this.userRepository.findOne({
-      username: createUserDTO.username,
+      username: createUserDto.username,
     });
 
     if (userByEmail || userByUsername)
@@ -34,7 +34,7 @@ export class UserService {
 
     const newUser = new UserEntity();
 
-    Object.assign(newUser, createUserDTO);
+    Object.assign(newUser, createUserDto);
 
     return await this.userRepository.save(newUser);
   }
@@ -43,10 +43,10 @@ export class UserService {
     return this.userRepository.findOne(id);
   }
 
-  async login(LoginUserDTO: LoginUserDTO): Promise<UserEntity> {
+  async login(LoginUserDto: LoginUserDto): Promise<UserEntity> {
     const user = await this.userRepository.findOne(
       {
-        email: LoginUserDTO.email,
+        email: LoginUserDto.email,
       },
       {
         select: ['id', 'username', 'email', 'bio', 'image', 'password'],
@@ -60,7 +60,7 @@ export class UserService {
       );
 
     const isPasswordCorrect = await compare(
-      LoginUserDTO.password,
+      LoginUserDto.password,
       user.password,
     );
 
@@ -77,10 +77,10 @@ export class UserService {
 
   async updateUser(
     userId: number,
-    updateUserDTO: UpdateUserDTO,
+    updateUserDto: UpdateUserDto,
   ): Promise<UserEntity> {
     const user = await this.findById(userId);
-    Object.assign(user, updateUserDTO);
+    Object.assign(user, updateUserDto);
     return await this.userRepository.save(user);
   }
 
