@@ -1,8 +1,8 @@
 import { UserEntity } from '@app/user/user.entity';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import slugify from 'slugify';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { ArticleEntity } from './article.entity';
 import { CreateArticleDto } from './dto/createArticle.dto';
 import { ArticleResponseInterface } from './types/articleResponse.interface';
@@ -26,6 +26,36 @@ export class ArticleService {
 
     article.slug = this.getSlug(createArticleDto.title);
     article.author = currentUser;
+
+    return await this.articleRepository.save(article);
+  }
+
+  async deleteArticle(slug: string, currentUserId): Promise<DeleteResult> {
+    const article = await this.findBySlug(slug);
+
+    if (!article)
+      throw new HttpException('Article does not exist', HttpStatus.NOT_FOUND);
+
+    if (article.author.id !== currentUserId)
+      throw new HttpException('You are not an author', HttpStatus.FORBIDDEN);
+
+    return await this.articleRepository.delete({ slug });
+  }
+
+  async updateArticle(
+    slug: string,
+    updateArticleDto: CreateArticleDto,
+    currentUserId: number,
+  ): Promise<ArticleEntity> {
+    const article = await this.findBySlug(slug);
+
+    if (!article)
+      throw new HttpException('Article does not exist', HttpStatus.NOT_FOUND);
+
+    if (article.author.id !== currentUserId)
+      throw new HttpException('You are not an author', HttpStatus.FORBIDDEN);
+
+    Object.assign(article, updateArticleDto);
 
     return await this.articleRepository.save(article);
   }
