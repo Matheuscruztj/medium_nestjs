@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -16,10 +17,19 @@ import {
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/createArticle.dto';
 import { ArticleResponseInterface } from './types/articleResponse.interface';
+import { ArticlesResponseInterface } from './types/articlesReponse.interface';
 
 @Controller('articles')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
+
+  @Get()
+  async findAll(
+    @User('id') currentUserId: number,
+    @Query() query: any,
+  ): Promise<ArticlesResponseInterface> {
+    return await this.articleService.findAll(currentUserId, query);
+  }
 
   @Post()
   @UseGuards(AuthGuard)
@@ -67,6 +77,34 @@ export class ArticleController {
       updateArticleDto,
       currentUserId,
     );
+
+    return this.articleService.buildArticleResponse(article);
+  }
+
+  @Post(':slug/favorite')
+  @UseGuards(AuthGuard)
+  async addArticleFavorites(
+    @User('id') currentUserId: number,
+    @Param('slug') slug: string,
+  ): Promise<ArticleResponseInterface> {
+    const article = await this.articleService.addArticleToFavorites(
+      slug,
+      currentUserId,
+    )
+
+    return this.articleService.buildArticleResponse(article);
+  }
+
+  @Delete(':slug/favorite')
+  @UseGuards(AuthGuard)
+  async deleteArticleFavorites(
+    @User('id') currentUserId: number,
+    @Param('slug') slug: string,
+  ): Promise<ArticleResponseInterface> {
+    const article = await this.articleService.deleteArticleToFavorites(
+      slug,
+      currentUserId,
+    )
 
     return this.articleService.buildArticleResponse(article);
   }
